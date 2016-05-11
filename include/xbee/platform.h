@@ -42,7 +42,13 @@
 	#define XBEE_END_DECLS
 #endif
 
+#ifdef __KERNEL__
+#include <linux/errno.h>
+#define POSIX
+#else
 #include <errno.h>
+#endif
+
 #include <stddef.h>
 
 /**
