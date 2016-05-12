@@ -42,9 +42,9 @@ int xbee_ser_invalid( xbee_serial_t *serial)
 
 #ifdef XBEE_SERIAL_VERBOSE
   if (serial == NULL)
-    printf( "%s: serial=NULL\n", __FUNCTION__);
+    PRINT( "%s: serial=NULL\n", __FUNCTION__);
   else
-    printf( "%s: serial=%p, serial->tty=%d, serial->ldisc_ops=%d (invalid)\n", __FUNCTION__,
+    PRINT( "%s: serial=%p, serial->tty=%p, serial->ldisc_ops=%p (invalid)\n", __FUNCTION__,
         serial, serial->tty, serial->ldisc_ops);
 #endif
 
@@ -78,15 +78,13 @@ int xbee_ser_write( xbee_serial_t *serial, const void FAR *buffer,
   if (result < 0)
   {
 #ifdef XBEE_SERIAL_VERBOSE
-    printf( "error trying to write %d bytes, write() returned %d\n", __FUNCTION__,
-        length, result);
+    PRINT( "%s: error trying to write %d bytes, write() returned %d\n", __FUNCTION__, length, result);
 #endif
     return -EIO;
   }
 
 #ifdef XBEE_SERIAL_VERBOSE
-  printf( "%s: wrote %d of %d bytes\n", __FUNCTION__, result, length);
-  hex_dump( buffer, result, HEX_DUMP_FLAG_TAB);
+  PRINT( "%s: wrote %d of %d bytes\n", __FUNCTION__, result, length);
 #endif
 
   return result;
@@ -102,7 +100,7 @@ int xbee_ser_read( xbee_serial_t *serial, void FAR *buffer, int bufsize)
   if (! buffer || bufsize < 0)
   {
 #ifdef XBEE_SERIAL_VERBOSE
-    printf( "%s: buffer=%p, bufsize=%d; return -EINVAL\n", __FUNCTION__,
+    PRINT( "%s: buffer=%p, bufsize=%d; return -EINVAL\n", __FUNCTION__,
         buffer, bufsize);
 #endif
     return -EINVAL;
@@ -111,7 +109,7 @@ int xbee_ser_read( xbee_serial_t *serial, void FAR *buffer, int bufsize)
   if (!serial->ldisc_ops->read)
   {
 #ifdef XBEE_SERIAL_VERBOSE
-    printf( "%s: ldisc_ops read NULL; return -ENOSYS\n", __FUNCTION__);
+    PRINT( "%s: ldisc_ops read NULL; return -ENOSYS\n", __FUNCTION__);
 #endif
     return -ENOSYS;
   }
@@ -121,15 +119,14 @@ int xbee_ser_read( xbee_serial_t *serial, void FAR *buffer, int bufsize)
     return 0;
   else if (result < 0) {
 #ifdef XBEE_SERIAL_VERBOSE
-    printf( "%s: error %d trying to read %d bytes\n", __FUNCTION__,
+    PRINT( "%s: error %d trying to read %d bytes\n", __FUNCTION__,
         result, bufsize);
 #endif
     return result;
   }
 
 #ifdef XBEE_SERIAL_VERBOSE
-  printf( "%s: read %d bytes\n", __FUNCTION__, result);
-  hex_dump( buffer, result, HEX_DUMP_FLAG_TAB);
+  PRINT( "%s: read %d bytes\n", __FUNCTION__, result);
 #endif
 
   return result;
@@ -197,39 +194,38 @@ int xbee_ser_rx_free( xbee_serial_t *serial)
 
 int xbee_ser_rx_used( xbee_serial_t *serial)
 {
-  // int bytes;
-  // int err;
+  int bytes;
+  int err;
 
   XBEE_SER_CHECK( serial);
 
-  return 0;
-
-  /*
   if (!serial->ldisc_ops->ioctl) {
 #ifdef XBEE_SERIAL_VERBOSE
-    printf( "%s: ioctl %s failed, ioctl function not implemented\n", __FUNCTION__, "TIOCMGET");
+    PRINT( "%s: ioctl %s failed, ioctl function not implemented\n", __FUNCTION__, "TIOCMGET");
 #endif
     return -ENOSYS;
   }
 
-  if ((err = serial->ldisc_ops->ioctl(serial->tty, NULL, 
+  if ((err = serial->ldisc_ops->ioctl(serial->tty, NULL,
 #ifdef FIONREAD
         FIONREAD,
 #else
         TIOCINQ,							// for Cygwin
 #endif
-       (int)&bytes)) < 0)
+       (unsigned long)&bytes)) < 0)
   {
 #ifdef XBEE_SERIAL_VERBOSE
-    printf( "%s: ioctl %s failed (errno=%d)\n", __FUNCTION__,
+    PRINT( "%s: ioctl %s failed (errno=%d)\n", __FUNCTION__,
         "TIOCMGET", err);
 #endif
     return err;
   }
+#ifdef XBEE_SERIAL_VERBOSE
+  PRINT( "%s: ioctl %s returned (successfully) %d\n", __FUNCTION__,
+        "TIOCMGET", bytes);
+#endif
   return bytes;
-  */
 }
-
 
 int xbee_ser_rx_flush( xbee_serial_t *serial)
 {
@@ -269,7 +265,7 @@ int xbee_ser_break( xbee_serial_t *serial, int enabled)
 
   if (!serial->ldisc_ops->ioctl) {
 #ifdef XBEE_SERIAL_VERBOSE
-    printf( "%s: ioctl %s failed, ioctl function not implemented\n", __FUNCTION__, "TIOCMGET");
+    PRINT( "%s: ioctl %s failed, ioctl function not implemented\n", __FUNCTION__, "TIOCMGET");
 #endif
     return -ENOSYS;
   }
@@ -277,7 +273,7 @@ int xbee_ser_break( xbee_serial_t *serial, int enabled)
   if ((err = serial->ldisc_ops->ioctl(serial->tty, NULL, enabled ? TIOCSBRK : TIOCCBRK, 0)) < 0)
   {
 #ifdef XBEE_SERIAL_VERBOSE
-    printf( "%s: ioctl %s failed (errno=%d)\n", __FUNCTION__,
+    PRINT( "%s: ioctl %s failed (errno=%d)\n", __FUNCTION__,
         "TIOCMGET", err);
 #endif
     return err;

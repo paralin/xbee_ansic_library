@@ -265,9 +265,22 @@ int xbee_atmode_tick( xbee_dev_t *xbee)
 
 		case XBEE_MODE_WAIT_IDLE:
 			if (xbee_millisecond_timer() - xbee->mode_timer > 2000)
-			{
 				xbee->mode = XBEE_MODE_IDLE;
-			}
+      else {
+        if (xbee_ser_rx_used( &xbee->serport) >= sizeof ok_response)
+        {
+          memset( buffer, 0, sizeof ok_response);
+          xbee_ser_read( &xbee->serport, buffer, sizeof ok_response);
+#ifdef XBEE_ATMODE_VERBOSE
+          PRINT( "%s: read post_escape ok_response wait_idle\n", __FUNCTION__);
+#endif
+          if (memcmp( buffer, ok_response, sizeof ok_response) == 0)
+          {
+            xbee->mode_timer = xbee_millisecond_timer();
+            xbee->mode = XBEE_MODE_IDLE;
+          }
+        }
+      }
 			break;
 
 		case XBEE_MODE_COMMAND:
