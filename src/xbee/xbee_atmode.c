@@ -31,13 +31,21 @@
 /*** BeginHeader */
 #ifdef XBEE_DEVICE_ENABLE_ATMODE
 
+#ifdef __KERNEL__
+#include <linux/errno.h>
+#include <linux/string.h>
+#include <linux/printk.h>
+#define PRINT printk
+#else
 #include <errno.h>
 #include <string.h>
-
-#include "xbee/platform.h"
+#define PRINT printf
 #ifdef XBEE_ATMODE_VERBOSE
 	#include <stdio.h>
 #endif
+#endif
+
+#include "xbee/platform.h"
 
 #include "xbee/atmode.h"
 
@@ -85,14 +93,14 @@ int xbee_atmode_enter( xbee_dev_t *xbee)
 		case XBEE_MODE_WAIT_IDLE:
 			// already in command mode, or on our way there
 			#ifdef XBEE_ATMODE_VERBOSE
-				printf( "%s: ignoring request, already in state %d\n",
+				PRINT( "%s: ignoring request, already in state %d\n",
 					__FUNCTION__, xbee->mode);
 			#endif
 			return 0;
 	}
 
 	#ifdef XBEE_ATMODE_VERBOSE
-		printf( "%s: entering command mode (guard=%u, escape=%c)\n",
+		PRINT( "%s: entering command mode (guard=%u, escape=%c)\n",
 			__FUNCTION__, xbee->guard_time, xbee->escape_char);
 	#endif
 
@@ -133,7 +141,7 @@ int xbee_atmode_exit( xbee_dev_t *xbee)
 		case XBEE_MODE_PRE_ESCAPE:
 			// not actually in command-mode yet, just switch back to IDLE state
 			#ifdef XBEE_ATMODE_VERBOSE
-				printf( "%s: aborting pre-escape wait to enter command mode\n",
+				PRINT( "%s: aborting pre-escape wait to enter command mode\n",
 					__FUNCTION__);
 			#endif
 			xbee->mode = XBEE_MODE_IDLE;
@@ -144,13 +152,13 @@ int xbee_atmode_exit( xbee_dev_t *xbee)
 			// Force the caller to wait until we're actually in command mode
 			// before making the switch.
 			#ifdef XBEE_ATMODE_VERBOSE
-				printf( "%s: returning -EBUSY\n", __FUNCTION__);
+				PRINT( "%s: returning -EBUSY\n", __FUNCTION__);
 			#endif
 			return -EBUSY;
 
 		case XBEE_MODE_COMMAND:
 			#ifdef XBEE_ATMODE_VERBOSE
-				printf( "%s: sending ATCN\n", __FUNCTION__);
+				PRINT( "%s: sending ATCN\n", __FUNCTION__);
 			#endif
 			// in command mode, send ATCN to get out
 			xbee_atmode_send_request( xbee, "CN");
@@ -160,7 +168,7 @@ int xbee_atmode_exit( xbee_dev_t *xbee)
 	#ifdef XBEE_ATMODE_VERBOSE
 		default:
 			// not in command mode, don't change state
-			printf( "%s: mode unchanged (%d)\n", __FUNCTION__);
+			PRINT( "%s: mode unchanged\n", __FUNCTION__);
 	#endif
 	}
 
@@ -202,7 +210,7 @@ int xbee_atmode_tick( xbee_dev_t *xbee)
 			{
 				// guard time has passed, send escape sequence (def. "+++")
 				#ifdef XBEE_ATMODE_VERBOSE
-					printf( "%s: guard time elapsed, sending escape sequence\n",
+					PRINT( "%s: guard time elapsed, sending escape sequence\n",
 						__FUNCTION__);
 				#endif
 				memset( escape, xbee->escape_char, sizeof escape);
@@ -222,8 +230,7 @@ int xbee_atmode_tick( xbee_dev_t *xbee)
             memset( buffer, 0, sizeof ok_response);
             xbee_ser_read( &xbee->serport, buffer, sizeof ok_response);
             #ifdef XBEE_ATMODE_VERBOSE
-            	printf( "%s: read %.*s\n", __FUNCTION__, sizeof ok_response,
-            			buffer);
+            	PRINT( "%s: read post_escape ok_response\n", __FUNCTION__);
             #endif
             if (memcmp( buffer, ok_response, sizeof ok_response) == 0)
             {
@@ -240,7 +247,7 @@ int xbee_atmode_tick( xbee_dev_t *xbee)
 																	> xbee->guard_time + 200)
 			{
 				#ifdef XBEE_ATMODE_VERBOSE
-					printf( "%s: guard time expired before 'OK'\n", __FUNCTION__);
+					PRINT( "%s: guard time expired before 'OK'\n", __FUNCTION__);
 				#endif
 				// guard time passed and we didn't receive OK
 				xbee->mode = XBEE_MODE_IDLE;
@@ -251,7 +258,7 @@ int xbee_atmode_tick( xbee_dev_t *xbee)
 			if (xbee_millisecond_timer() - xbee->mode_timer > 2000)
 			{
 				#ifdef XBEE_ATMODE_VERBOSE
-					printf( "%s: timed out waiting for response\n", __FUNCTION__);
+					PRINT( "%s: timed out waiting for response\n", __FUNCTION__);
 				#endif
 				xbee->mode = XBEE_MODE_COMMAND;
 			}
@@ -269,7 +276,7 @@ int xbee_atmode_tick( xbee_dev_t *xbee)
 																> xbee->idle_timeout * 100ul)
 			{
 				#ifdef XBEE_ATMODE_VERBOSE
-					printf( "%s: timeout from command mode to idle\n", __FUNCTION__);
+					PRINT( "%s: timeout from command mode to idle\n", __FUNCTION__);
 				#endif
 				xbee->mode = XBEE_MODE_IDLE;
 			}
@@ -454,7 +461,7 @@ int xbee_atmode_read_response( xbee_dev_t *xbee, char FAR *response,
 			xbee->mode = XBEE_MODE_COMMAND;	// got response, still in command mode
 		}
       #ifdef XBEE_ATMODE_VERBOSE
-         printf( "%s: %s waiting for response, now in %s mode\n", __FUNCTION__,
+         PRINT( "%s: %s waiting for response, now in %s mode\n", __FUNCTION__,
          	retval ? "timeout" : "success",
          	(xbee->mode == XBEE_MODE_IDLE) ? "idle" : "command");
       #endif

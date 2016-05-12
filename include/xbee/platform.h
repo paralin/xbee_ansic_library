@@ -44,8 +44,14 @@
 
 #ifdef __KERNEL__
 #include <linux/errno.h>
+#include <linux/string.h>
+#include <linux/printk.h>
+#define PRINT printk
 #else
 #include <errno.h>
+#include <string.h>
+#include <stdio.h>
+#define PRINT printf
 #endif
 
 #include <stddef.h>
