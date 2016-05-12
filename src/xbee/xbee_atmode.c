@@ -214,12 +214,11 @@ int xbee_atmode_tick( xbee_dev_t *xbee)
 						__FUNCTION__);
 				#endif
 				memset( escape, xbee->escape_char, sizeof escape);
+				// flush receive buffer (may be leftover frames from API mode)
+				xbee_ser_rx_flush( &xbee->serport);
 				xbee_ser_write( &xbee->serport, escape, sizeof escape);
 				xbee->mode = XBEE_MODE_POST_ESCAPE;
 				xbee->mode_timer = xbee_millisecond_timer();
-
-				// flush receive buffer (may be leftover frames from API mode)
-				xbee_ser_rx_flush( &xbee->serport);
 			}
 			break;
 
