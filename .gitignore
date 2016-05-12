@@ -62,3 +62,10 @@ samples/posix/zcltime
 t_memcheck
 zdo_simple_desc_respond
 zdo_match_desc_request
+
+*.ko
+*.mod.c
+*.o.cmd
+*.ko.cmd
+*.mod.o
+*.o

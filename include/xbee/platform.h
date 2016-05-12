@@ -44,7 +44,6 @@
 
 #ifdef __KERNEL__
 #include <linux/errno.h>
-#define POSIX
 #else
 #include <errno.h>
 #endif
@@ -312,6 +311,8 @@
 	#include XBEE_PLATFORM_HEADER
 #elif defined __DC__
 	#include "xbee/platform_rabbit.h"
+#elif defined __KERNEL__
+  #include "xbee/platform_kernel.h"
 #elif defined POSIX
 	#include "xbee/platform_posix.h"
 #elif defined __DOS__

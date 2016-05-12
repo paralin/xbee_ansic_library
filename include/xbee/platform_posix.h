@@ -25,35 +25,13 @@
 
 #ifndef __XBEE_PLATFORM_POSIX
 #define __XBEE_PLATFORM_POSIX
-#ifdef __KERNEL__
-	#include <linux/string.h>
-#else
 	#include <strings.h>
-#endif
 
 	#define strcmpi		strcasecmp
 	#define strncmpi		strncasecmp
 
 	// Load platform's endian header to learn whether we're big or little.
-#ifdef __KERNEL__
-	#include <linux/types.h>
-
-  typedef uint8_t uint_fast8_t;
-  typedef uint8_t uint8_fast8_t;
-
-#define LITTLE_ENDIAN 1
-#define BIG_ENDIAN 0
-#ifdef __LITTLE_ENDIAN
-#define BYTE_ORDER LITTLE_ENDIAN
-#elif defined(__BIG_ENDIAN)
-#define BYTE_ORDER BIG_ENDIAN
-#else
-#error Unknown endianness.
-#endif
-
-#else
 	#include <sys/types.h>
-#endif
 
 	// macro used to declare a packed structure (no alignment of elements)
 	#define PACKED_STRUCT		struct __attribute__ ((__packed__))
@@ -64,11 +42,10 @@
 	typedef int bool_t;
 
 	// stdint.h for int8_t, uint8_t, int16_t, etc. types
-	// inttypes.h for PRIx16, PRIx32, etc. macros
-#ifndef __KERNEL__
 	#include <stdint.h>
+
+	// inttypes.h for PRIx16, PRIx32, etc. macros
 	#include <inttypes.h>
-#endif
 
 	// compiler natively supports 64-bit integers
 	#define XBEE_NATIVE_64BIT
