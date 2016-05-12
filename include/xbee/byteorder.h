@@ -71,7 +71,7 @@
 
 #ifndef __XBEE_ENDIAN_H
 #define __XBEE_ENDIAN_H
-	#include <string.h>			// for memcpy
+	// #include <string.h>			// for memcpy
 
 	// xbee/platform will load the platform's endian.h or at least define
 	// the macros LITTLE_ENDIAN, BIG_ENDIAN and BYTE_ORDER.

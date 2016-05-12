@@ -22,11 +22,6 @@
 */
 
 /*** BeginHeader */
-#include <errno.h>
-#include <stddef.h>
-#include <stdio.h>
-#include <string.h>
-
 #include "xbee/platform.h"
 #include "xbee/device.h"
 
@@ -226,9 +221,9 @@ void xbee_dev_dump_settings( xbee_dev_t *xbee, uint16_t flags)
 	// flags parameter included in API for future expansion; unused for now
 	XBEE_UNUSED_PARAMETER( flags);
 
-	printf( "XBee on %s: HV=0x%x  VR=0x%" PRIx32 "  IEEE=%" PRIsFAR
+	PRINT( "XBee on %s: HV=0x%x  VR=0x%" PRIx32 "  IEEE=%" PRIsFAR
 		"  net=0x%04x\n\n", xbee_ser_portname( &xbee->serport),
-		xbee->hardware_version, xbee->firmware_version,
+		xbee->hardware_version, (long unsigned int) xbee->firmware_version,
 		addr64_format( addr, &xbee->wpan_dev.address.ieee),
 		xbee->wpan_dev.address.network);
 }
@@ -363,12 +358,12 @@ void _xbee_dispatch_table_dump( const xbee_dev_t *xbee)
 	{
 		if (entry->frame_type)
 		{
-			printf( "%3d:\t0x%02x\t0x%02x\t0x%p\t%" PRIpFAR "\n", i,
+			PRINT( "%3d:\t0x%02x\t0x%02x\t0x%p\t%" PRIpFAR "\n", i,
 				entry->frame_type, entry->frame_id, entry->handler, entry->context);
 		}
 		else
 		{
-			printf( "%3d:\t[empty]\n", i);
+			PRINT( "%3d:\t[empty]\n", i);
 		}
 	}
 #endif
@@ -517,7 +512,7 @@ int xbee_frame_write( xbee_dev_t *xbee, const void FAR *header,
 	{
 		// <xbee> is NULL, or xbee->serport is not valid
 		#ifdef XBEE_DEVICE_VERBOSE
-			printf( "%s: return -EINVAL (xbee = 0x%p, cts = %d)\n",
+			PRINT( "%s: return -EINVAL (xbee = 0x%p, cts = %d)\n",
 				__FUNCTION__, xbee, cts);
 		#endif
 		return -EINVAL;
@@ -534,7 +529,7 @@ int xbee_frame_write( xbee_dev_t *xbee, const void FAR *header,
 	if (! (headerlen || datalen))
 	{
 		#ifdef XBEE_DEVICE_VERBOSE
-			printf( "%s: return -ENODATA (headerlen = %u, datalen = %u)\n",
+			PRINT( "%s: return -ENODATA (headerlen = %u, datalen = %u)\n",
 				__FUNCTION__, headerlen, datalen);
 		#endif
 		return -ENODATA;
@@ -548,7 +543,7 @@ int xbee_frame_write( xbee_dev_t *xbee, const void FAR *header,
 	if (! cts || free < framesize)
 	{
 		#ifdef XBEE_DEVICE_VERBOSE
-			printf( "%s: return -EBUSY (cts = %s, free = %d, framesize = %d)\n",
+			PRINT( "%s: return -EBUSY (cts = %s, free = %d, framesize = %d)\n",
 				__FUNCTION__, cts ? "yes" : "no", free, framesize);
 		#endif
 		return (framesize - free > used) ? -EMSGSIZE : -EBUSY;
@@ -565,7 +560,7 @@ int xbee_frame_write( xbee_dev_t *xbee, const void FAR *header,
 		{
 			id = ((const char FAR *)header)[1];
 		}
-		printf( "%s: frame type 0x%02x, id 0x%02x (%u-byte payload)\n",
+		PRINT( "%s: frame type 0x%02x, id 0x%02x (%u-byte payload)\n",
 			__FUNCTION__, type, id, headerlen + datalen);
 	#endif
 
@@ -646,7 +641,7 @@ int _xbee_frame_load( xbee_dev_t *xbee)
 	if (xbee == NULL || xbee_ser_invalid( (serport = &xbee->serport) ))
 	{
 		#ifdef XBEE_DEVICE_VERBOSE
-			printf( "%s: return -EINVAL (xbee is %p)\n", __FUNCTION__, xbee);
+			PRINT( "%s: return -EINVAL (xbee is %p)\n", __FUNCTION__, xbee);
 		#endif
 		return -EINVAL;
 	}
@@ -672,7 +667,7 @@ int _xbee_frame_load( xbee_dev_t *xbee)
 	            }
 	         } while (ch != 0x7E);
 	         #ifdef XBEE_DEVICE_VERBOSE
-					printf( "%s: got start-of-frame\n", __FUNCTION__);
+					PRINT( "%s: got start-of-frame\n", __FUNCTION__);
 	         #endif
 	         xbee->rx.state = XBEE_RX_STATE_LENGTH_MSB;
 				// fall through to next state
@@ -688,7 +683,7 @@ int _xbee_frame_load( xbee_dev_t *xbee)
 					// MSB of length can never be 0x7E, consider it to be the new
 					// start-of-frame character and recheck for the length.
 					#ifdef XBEE_DEVICE_VERBOSE
-						printf( "%s: ignoring duplicate start-of-frame (0x7E)\n",
+						PRINT( "%s: ignoring duplicate start-of-frame (0x7E)\n",
 							__FUNCTION__);
 					#endif
 					break;
@@ -710,7 +705,7 @@ int _xbee_frame_load( xbee_dev_t *xbee)
 				{
 					// this isn't a valid frame, go back to looking for start marker
 					#ifdef XBEE_DEVICE_VERBOSE
-						printf( "%s: read bad frame length (%u ! [2 .. %u])\n",
+						PRINT( "%s: read bad frame length (%u ! [2 .. %u])\n",
 							__FUNCTION__, length, XBEE_MAX_FRAME_LEN);
 					#endif
 					if (ch == 0x7E)
@@ -726,7 +721,7 @@ int _xbee_frame_load( xbee_dev_t *xbee)
 					break;
 				}
 	         #ifdef XBEE_DEVICE_VERBOSE
-					printf( "%s: got length %" PRIu16 "\n", __FUNCTION__, length);
+					PRINT( "%s: got length %" PRIu16 "\n", __FUNCTION__, length);
 	         #endif
 				xbee->rx.state = XBEE_RX_STATE_RXFRAME;
 				xbee->rx.bytes_read = 0;
@@ -755,7 +750,7 @@ int _xbee_frame_load( xbee_dev_t *xbee)
 				{
 					// checksum failed, throw out the frame
 					#ifdef XBEE_DEVICE_VERBOSE
-						printf( "%s: checksum failed\n", __FUNCTION__);
+						PRINT( "%s: checksum failed\n", __FUNCTION__);
 						hex_dump( xbee->rx.frame_data, xbee->rx.bytes_in_frame + 1,
 							HEX_DUMP_FLAG_OFFSET);
 					#endif
@@ -777,7 +772,7 @@ int _xbee_frame_load( xbee_dev_t *xbee)
 					// frame is ready for dispatch
 					++dispatched;
 					#ifdef XBEE_DEVICE_VERBOSE
-						printf( "%s: dispatch frame #%d\n", __FUNCTION__,
+						PRINT( "%s: dispatch frame #%d\n", __FUNCTION__,
 							dispatched);
 					#endif
 					_xbee_frame_dispatch( xbee, xbee->rx.frame_data,
@@ -792,7 +787,7 @@ int _xbee_frame_load( xbee_dev_t *xbee)
 
 			default:
 				#ifdef XBEE_DEVICE_VERBOSE
-					printf( "%s: invalid state %d\n", __FUNCTION__,
+					PRINT( "%s: invalid state %d\n", __FUNCTION__,
 						xbee->rx.state);
 				#endif
 				xbee->rx.state = XBEE_RX_STATE_WAITSTART;
@@ -845,7 +840,7 @@ void _xbee_dev_modem_status( wpan_dev_t *wpan, uint_fast8_t status)
 			flags &= ~(WPAN_FLAG_JOINED | WPAN_FLAG_AUTHENTICATED);
 			wpan->address.network = WPAN_NET_ADDR_UNDEFINED;
 			#ifdef XBEE_DEVICE_VERBOSE
-				printf( "%s: marked network address as invalid (status=0x%02x)\n",
+				PRINT( "%s: marked network address as invalid (status=0x%02x)\n",
 					__FUNCTION__, status);
 			#endif
 			break;
@@ -908,7 +903,7 @@ int _xbee_frame_dispatch( xbee_dev_t *xbee, const void FAR *frame,
 	}
 
 	#ifdef XBEE_DEVICE_VERBOSE
-		printf( "%s: dispatch frame type 0x%02x, id 0x%02x\n",
+		PRINT( "%s: dispatch frame type 0x%02x, id 0x%02x\n",
 			__FUNCTION__, frametype, frameid);
 		hex_dump( frame, length, HEX_DUMP_FLAG_NONE);
 	#endif
@@ -923,7 +918,7 @@ int _xbee_frame_dispatch( xbee_dev_t *xbee, const void FAR *frame,
 				++dispatched;
 				// entry matches all frame IDs (0) or matches this frame's ID
 	         #ifdef XBEE_DEVICE_VERBOSE
-	            printf( "%s: calling frame handler @%p, w/context %" \
+	            PRINT( "%s: calling frame handler @%p, w/context %" \
 	            	PRIpFAR "\n", __FUNCTION__, entry->handler, entry->context);
 	         #endif
 				entry->handler( xbee, frame, length, entry->context);
@@ -934,7 +929,7 @@ int _xbee_frame_dispatch( xbee_dev_t *xbee, const void FAR *frame,
 	#ifdef XBEE_DEVICE_VERBOSE
 		if (! dispatched)
 		{
-			printf( "%s: no handlers for frame type 0x%02x, id 0x%02x\n",
+			PRINT( "%s: no handlers for frame type 0x%02x, id 0x%02x\n",
 				__FUNCTION__, frametype, frameid);
 		}
 	#endif
@@ -945,7 +940,6 @@ int _xbee_frame_dispatch( xbee_dev_t *xbee, const void FAR *frame,
 
 /*** BeginHeader xbee_frame_dump_modem_status */
 /*** EndHeader */
-#include <stdio.h>
 // see xbee/device.h for documentation
 _xbee_device_debug
 int xbee_frame_dump_modem_status( xbee_dev_t *xbee,
@@ -1022,7 +1016,7 @@ int xbee_frame_dump_modem_status( xbee_dev_t *xbee,
 		default:
 			status_str = "undefined";
 	}
-	printf( "%s: status: %s (0x%02x)\n", __FUNCTION__,
+	PRINT( "%s: status: %s (0x%02x)\n", __FUNCTION__,
 		status_str, frame->status);
 
 	return 0;

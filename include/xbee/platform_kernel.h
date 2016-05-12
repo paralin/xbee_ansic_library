@@ -32,6 +32,7 @@
 
   typedef uint8_t uint_fast8_t;
   typedef uint8_t uint8_fast8_t;
+  typedef int int_fast8_t;
 
   #define LITTLE_ENDIAN 1
   #define BIG_ENDIAN 0

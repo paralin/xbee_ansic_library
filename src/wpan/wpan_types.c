@@ -19,8 +19,13 @@
 */
 
 /*** BeginHeader */
+#ifdef __KERNEL__
+#include <linux/ctype.h>
+#include <linux/string.h>
+#else
 #include <ctype.h>
 #include <string.h>
+#endif
 #include "wpan/types.h"
 /*** EndHeader */
 
