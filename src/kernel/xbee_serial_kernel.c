@@ -220,10 +220,7 @@ int xbee_ser_rx_used( xbee_serial_t *serial)
 #endif
     return err;
   }
-#ifdef XBEE_SERIAL_VERBOSE
-  PRINT( "%s: ioctl %s returned (successfully) %d\n", __FUNCTION__,
-        "TIOCMGET", bytes);
-#endif
+  // removed debug message here, printed hundreds of messages.
   return bytes;
 }
 
