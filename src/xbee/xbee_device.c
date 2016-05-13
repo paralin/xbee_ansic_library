@@ -352,7 +352,7 @@ void _xbee_dispatch_table_dump( const xbee_dev_t *xbee)
 		return;
 	}
 
-	puts( "Index\tType\tID\tHandler\tContext");
+	PRINT( "Index\tType\tID\tHandler\tContext");
 	entry = xbee_frame_handlers;
 	for (i = 0; entry->frame_type != 0xFF; ++i, ++entry)
 	{
@@ -691,6 +691,10 @@ int _xbee_frame_load( xbee_dev_t *xbee)
 				// set MSB of frame length
 				xbee->rx.bytes_in_frame = ch << 8;
 				xbee->rx.state = XBEE_RX_STATE_LENGTH_LSB;
+        #ifdef XBEE_DEVICE_VERBOSE
+          PRINT( "%s: read MSB, size so far is %d\n",
+            __FUNCTION__, xbee->rx.bytes_in_frame);
+        #endif
 			   // fall through to trying to read LSB of length
 	   	case XBEE_RX_STATE_LENGTH_LSB:
 	   		// try to read a character from the serial port
@@ -701,6 +705,10 @@ int _xbee_frame_load( xbee_dev_t *xbee)
 
 	   		// set LSB of frame length, make local copy for range check
 				length = (xbee->rx.bytes_in_frame += ch);
+        #ifdef XBEE_DEVICE_VERBOSE
+          PRINT( "%s: read LSB (%d) (0x%x), size so far is %d\n",
+            __FUNCTION__, ch, ch, xbee->rx.bytes_in_frame);
+        #endif
 				if (length > XBEE_MAX_FRAME_LEN || length < 2)
 				{
 					// this isn't a valid frame, go back to looking for start marker
@@ -751,8 +759,6 @@ int _xbee_frame_load( xbee_dev_t *xbee)
 					// checksum failed, throw out the frame
 					#ifdef XBEE_DEVICE_VERBOSE
 						PRINT( "%s: checksum failed\n", __FUNCTION__);
-						hex_dump( xbee->rx.frame_data, xbee->rx.bytes_in_frame + 1,
-							HEX_DUMP_FLAG_OFFSET);
 					#endif
 
 					/* At this point, we *could* look through the frame data for
@@ -905,7 +911,6 @@ int _xbee_frame_dispatch( xbee_dev_t *xbee, const void FAR *frame,
 	#ifdef XBEE_DEVICE_VERBOSE
 		PRINT( "%s: dispatch frame type 0x%02x, id 0x%02x\n",
 			__FUNCTION__, frametype, frameid);
-		hex_dump( frame, length, HEX_DUMP_FLAG_NONE);
 	#endif
 
 	dispatched = 0;

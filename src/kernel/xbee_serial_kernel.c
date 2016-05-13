@@ -154,9 +154,7 @@ int xbee_ser_getchar( xbee_serial_t *serial)
 
   retval = xbee_ser_read( serial, &ch, 1);
   if (retval != 1)
-  {
     return retval ? retval : -ENODATA;
-  }
 
   return ch;
 }
