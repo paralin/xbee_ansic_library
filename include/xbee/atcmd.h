@@ -43,7 +43,7 @@ XBEE_BEGIN_DECLS
 #define XBEE_CMD_REMOTE_TIMEOUT		180
 
 /// Timeout (in seconds) to wait for a response to a local command.
-#define XBEE_CMD_LOCAL_TIMEOUT		2
+#define XBEE_CMD_LOCAL_TIMEOUT		5
 
 /// Datatype used for passing and storing XBee AT Commands.  Allows printing
 /// (e.g., printf( "%.2s", foo.str)), easy copying (bar.w = foo.w) and

@@ -412,6 +412,8 @@ typedef struct wpan_dev_t {
 	/// wpan_endpoint_get_next() to walk the table.
 	const wpan_endpoint_table_entry_t	*endpoint_table;
 
+  // extra space for user to store a pointer to something for fast lookup
+  void* extra_ptr;
 } wpan_dev_t;
 
 /// Macro to test whether a device has joined the network.
