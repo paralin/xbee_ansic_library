@@ -18,9 +18,6 @@
 */
 
 /*** BeginHeader */
-#include <stddef.h>
-#include <stdio.h>
-
 #include "xbee/platform.h"
 #include "xbee/device.h"
 #include "xbee/wpan.h"

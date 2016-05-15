@@ -22,9 +22,12 @@
 #ifndef __XBEE_PLATFORM_KERNEL
 #define __XBEE_PLATFORM_KERNEL
   #include <linux/string.h>
+  #include <linux/slab.h>
 
   #define strcmpi    strcasecmp
   #define strncmpi    strncasecmp
+
+  #define XBEE_NO_ASSERT
 
   // Load platform's endian header to learn whether we're big or little.
   #include <linux/types.h>
@@ -69,5 +72,9 @@ typedef struct xbee_serial_t {
 // Per POSIX standard, "The resolution of the system clock is unspecified."
 // We assume the millisecond timer has at least a 10ms resolution.
 #define XBEE_MS_TIMER_RESOLUTION 10
+
+#define _sys_calloc( s)		kcalloc(s, 1, GFP_KERNEL)
+#define _sys_malloc( s)		kmalloc(s, GFP_KERNEL)
+#define _sys_free( p)		kfree( p)
 
 #endif    // __XBEE_PLATFORM_KERNEL

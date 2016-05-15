@@ -67,6 +67,11 @@ typedef struct xbee_serial_t {
 #define _xbee_checksum( bytes, length, initial)	\
 	_xbee_checksum_inline( bytes, length, initial)
 
+// Rabbit uses special malloc calls to access system (vs. user) memory
+#define _sys_calloc( s)		calloc( s, 1)
+#define _sys_malloc( s)		malloc( s)
+#define _sys_free( p)		free( p)
+
 #use "xbee_platform_rabbit.c"
 #use "hexdump.c"
 

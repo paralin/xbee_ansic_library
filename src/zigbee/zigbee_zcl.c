@@ -24,10 +24,6 @@
 */
 
 /*** BeginHeader */
-#include <errno.h>
-#include <string.h>
-#include <stdio.h>
-
 #include "xbee/platform.h"
 #include "xbee/byteorder.h"
 #include "wpan/aps.h"
@@ -75,7 +71,7 @@ int zcl_send_response( zcl_command_t *request, const void FAR *response,
 	if (request == NULL)
 	{
 		#ifdef ZIGBEE_ZCL_VERBOSE
-			printf( "%s: returning -EINVAL\n", __FUNCTION__);
+			PRINT( "%s: returning -EINVAL\n", __FUNCTION__);
 		#endif
 		return -EINVAL;
 	}
@@ -87,7 +83,7 @@ int zcl_send_response( zcl_command_t *request, const void FAR *response,
 		reply_envelope.payload = response;
 		reply_envelope.length = length;
 		#ifdef ZIGBEE_ZCL_VERBOSE
-			printf( "%s: sending %d-byte response\n", __FUNCTION__,
+			PRINT( "%s: sending %d-byte response\n", __FUNCTION__,
 				reply_envelope.length);
 			wpan_envelope_dump( &reply_envelope);
 		#endif
@@ -126,7 +122,7 @@ const zcl_attribute_base_t FAR *zcl_attribute_get_next(
 	if (entry->id == ZCL_ATTRIBUTE_END_OF_LIST)
 	{
 		#ifdef ZIGBEE_ZCL_VERBOSE
-			printf( "%s: already at end of list\n", __FUNCTION__);
+			PRINT( "%s: already at end of list\n", __FUNCTION__);
 		#endif
 		// don't advance past the end of the list
 		return entry;
@@ -203,7 +199,7 @@ int zcl_build_header( zcl_header_response_t *rsp, zcl_command_t *cmd)
 	if (rsp == NULL || cmd == NULL)
 	{
 		#ifdef ZIGBEE_ZCL_VERBOSE
-			printf( "%s: returning -EINVAL\n", __FUNCTION__);
+			PRINT( "%s: returning -EINVAL\n", __FUNCTION__);
 		#endif
 		return -EINVAL;
 	}
@@ -257,7 +253,7 @@ int zcl_default_response( zcl_command_t *request, uint8_t status)
 	if (request == NULL)
 	{
 		#ifdef ZIGBEE_ZCL_VERBOSE
-			printf( "%s: returning -EINVAL\n", __FUNCTION__);
+			PRINT( "%s: returning -EINVAL\n", __FUNCTION__);
 		#endif
 		return -EINVAL;
 	}
@@ -266,7 +262,7 @@ int zcl_default_response( zcl_command_t *request, uint8_t status)
 		(request->frame_control & ZCL_FRAME_DISABLE_DEF_RESP))
 	{
 		#ifdef ZIGBEE_ZCL_VERBOSE
-			printf( "%s: don't send SUCCESS; sender disabled default response\n",
+			PRINT( "%s: don't send SUCCESS; sender disabled default response\n",
 				__FUNCTION__);
 		#endif
 		return 0;
@@ -276,7 +272,7 @@ int zcl_default_response( zcl_command_t *request, uint8_t status)
 		& (WPAN_ENVELOPE_BROADCAST_ADDR | WPAN_ENVELOPE_BROADCAST_EP))
 	{
 		#ifdef ZIGBEE_ZCL_VERBOSE
-			printf( "%s: not responding to %s\n", __FUNCTION__,
+			PRINT( "%s: not responding to %s\n", __FUNCTION__,
 				"broadcast message");
 		#endif
 		return 0;
@@ -286,7 +282,7 @@ int zcl_default_response( zcl_command_t *request, uint8_t status)
 		&& request->command == ZCL_CMD_DEFAULT_RESP)
 	{
 		#ifdef ZIGBEE_ZCL_VERBOSE
-			printf( "%s: not responding to %s\n", __FUNCTION__,
+			PRINT( "%s: not responding to %s\n", __FUNCTION__,
 				"default response");
 		#endif
 		return 0;
@@ -338,7 +334,7 @@ int zcl_check_minmax( const zcl_attribute_base_t FAR *entry,
 	if (entry == NULL || buffer_le == NULL)
 	{
 		#ifdef ZIGBEE_ZCL_VERBOSE
-			printf( "%s: returning -EINVAL\n", __FUNCTION__);
+			PRINT( "%s: returning -EINVAL\n", __FUNCTION__);
 		#endif
 		return -EINVAL;
 	}
@@ -349,7 +345,7 @@ int zcl_check_minmax( const zcl_attribute_base_t FAR *entry,
 		if (sizeof_type < 1 || sizeof_type > 4)
 		{
 			#ifdef ZIGBEE_ZCL_VERBOSE
-				printf( "%s: no min/max checking for type 0x%02x\n",
+				PRINT( "%s: no min/max checking for type 0x%02x\n",
 					__FUNCTION__, entry->type);
 			#endif
 			return 0;	// min/max checking is only valid for 1 to 4 byte values
@@ -358,7 +354,7 @@ int zcl_check_minmax( const zcl_attribute_base_t FAR *entry,
 		if (typeinfo & ZCL_T_FLOAT)
 		{
 			#ifdef ZIGBEE_ZCL_VERBOSE
-				printf( "%s: no min/max checking for floating point\n",
+				PRINT( "%s: no min/max checking for floating point\n",
 					__FUNCTION__);
 			#endif
 			return 0;
@@ -408,7 +404,7 @@ int zcl_check_minmax( const zcl_attribute_base_t FAR *entry,
 		}
 	}
 	#ifdef ZIGBEE_ZCL_VERBOSE
-		printf( "%s: new value %s\n", __FUNCTION__, zcl_result[retval]);
+		PRINT( "%s: new value %s\n", __FUNCTION__, zcl_result[retval]);
 	#endif
 
 	return retval;
@@ -451,7 +447,7 @@ int zcl_parse_attribute_record( const zcl_attribute_base_t FAR *entry,
 		// Note that a NULL entry parameter is OK and represents a cluster
 		// without any attributes.
 		#ifdef ZIGBEE_ZCL_VERBOSE
-			printf( "%s: returning -EINVAL\n", __FUNCTION__);
+			PRINT( "%s: returning -EINVAL\n", __FUNCTION__);
 		#endif
 		return -EINVAL;
 	}
@@ -480,7 +476,7 @@ int zcl_parse_attribute_record( const zcl_attribute_base_t FAR *entry,
 	if (start_buflen < value_offset)
 	{
 		#ifdef ZIGBEE_ZCL_VERBOSE
-			printf( "%s: buffer too small (can't hold id and type)\n",
+			PRINT( "%s: buffer too small (can't hold id and type)\n",
 				__FUNCTION__);
 		#endif
 		write_rec->status = ZCL_STATUS_MALFORMED_COMMAND;
@@ -496,7 +492,7 @@ int zcl_parse_attribute_record( const zcl_attribute_base_t FAR *entry,
 		if (! entry)
 		{
 			#ifdef ZIGBEE_ZCL_VERBOSE
-				printf( "%s: ERROR couldn't find attribute 0x%04x\n",
+				PRINT( "%s: ERROR couldn't find attribute 0x%04x\n",
 					__FUNCTION__, attribute);
 			#endif
 			write_rec->status = ZCL_STATUS_UNSUPPORTED_ATTRIBUTE;
@@ -504,7 +500,7 @@ int zcl_parse_attribute_record( const zcl_attribute_base_t FAR *entry,
 		else if (entry->type != type)
 		{
 			#ifdef ZIGBEE_ZCL_VERBOSE
-				printf( "%s: ERROR type mismatch (0x%02x != 0x%02x) on 0x%04x\n",
+				PRINT( "%s: ERROR type mismatch (0x%02x != 0x%02x) on 0x%04x\n",
 					__FUNCTION__, type, entry->type, attribute);
 			#endif
 			if (ZCL_TYPE_IS_INVALID( type))
@@ -521,7 +517,7 @@ int zcl_parse_attribute_record( const zcl_attribute_base_t FAR *entry,
 		else if (entry->flags & ZCL_ATTRIB_FLAG_READONLY)
 		{
 			#ifdef ZIGBEE_ZCL_VERBOSE
-				printf( "%s: ERROR attribute 0x%04x is read-only\n",
+				PRINT( "%s: ERROR attribute 0x%04x is read-only\n",
 					__FUNCTION__, attribute);
 			#endif
 			write_rec->status = ZCL_STATUS_READ_ONLY;
@@ -532,7 +528,7 @@ int zcl_parse_attribute_record( const zcl_attribute_base_t FAR *entry,
 			if (sizeof_type >= 0 && write_rec->buflen < sizeof_type)
 			{
 				#ifdef ZIGBEE_ZCL_VERBOSE
-					printf( "%s: buffer too small for type 0x%02x (have %d, need %d)\n",
+					PRINT( "%s: buffer too small for type 0x%02x (have %d, need %d)\n",
 						__FUNCTION__, type, write_rec->buflen, sizeof_type);
 				#endif
 				write_rec->status = ZCL_STATUS_MALFORMED_COMMAND;
@@ -587,7 +583,7 @@ int zcl_parse_attribute_record( const zcl_attribute_base_t FAR *entry,
 	#ifdef ZIGBEE_ZCL_VERBOSE
 		if (write_rec->status != ZCL_STATUS_SUCCESS)
 		{
-			printf( "%s: failure (0x%02x) trying to write attribute 0x%04x\n",
+			PRINT( "%s: failure (0x%02x) trying to write attribute 0x%04x\n",
 				__FUNCTION__, write_rec->status, entry->id);
 		}
 	#endif
@@ -664,7 +660,7 @@ int zcl_decode_attribute( const zcl_attribute_base_t FAR *entry,
 	if (entry == NULL || rec == NULL)
 	{
 		#ifdef ZIGBEE_ZCL_VERBOSE
-			printf( "%s: returning -EINVAL\n", __FUNCTION__);
+			PRINT( "%s: returning -EINVAL\n", __FUNCTION__);
 		#endif
 		return -EINVAL;
 	}
@@ -696,7 +692,7 @@ int zcl_decode_attribute( const zcl_attribute_base_t FAR *entry,
 				ulong = zcl_convert_24bit( rec->buffer,
 													entry->type == ZCL_TYPE_SIGNED_24BIT);
 				#ifdef ZIGBEE_ZCL_VERBOSE
-					printf( "%s: assigning 0x%06" PRIx32 " to attribute 0x%04x\n",
+					PRINT( "%s: assigning 0x%06" PRIx32 " to attribute 0x%04x\n",
 						__FUNCTION__, ulong & 0x00FFFFFF, entry->id);
 				#endif
 				*(uint32_t FAR *)entry->value = ulong;
@@ -708,7 +704,7 @@ int zcl_decode_attribute( const zcl_attribute_base_t FAR *entry,
 			if (*rec->buffer & 0xFE)
 			{
 				#ifdef ZIGBEE_ZCL_VERBOSE
-					printf( "%s: value 0x%02x is invalid for LOGICAL_BOOLEAN\n",
+					PRINT( "%s: value 0x%02x is invalid for LOGICAL_BOOLEAN\n",
 						__FUNCTION__, *rec->buffer);
 				#endif
 				newstatus = ZCL_STATUS_INVALID_VALUE;
@@ -721,7 +717,7 @@ int zcl_decode_attribute( const zcl_attribute_base_t FAR *entry,
 				// this is a failure on our part -- type used in OUR attribute list
 				// that this function doesn't support
 				#ifdef ZIGBEE_ZCL_VERBOSE
-					printf( "%s: unsupported type 0x%02x\n", __FUNCTION__,
+					PRINT( "%s: unsupported type 0x%02x\n", __FUNCTION__,
 						entry->type);
 				#endif
 				newstatus = ZCL_STATUS_UNSUPPORTED_ATTRIBUTE;
@@ -735,12 +731,12 @@ int zcl_decode_attribute( const zcl_attribute_base_t FAR *entry,
 					#endif
 default_assign:
 					#ifdef ZIGBEE_ZCL_VERBOSE
-						printf( "%s: assigning 0x", __FUNCTION__);
+						PRINT( "%s: assigning 0x", __FUNCTION__);
 						for (i = 0; i < sizeof_type; ++i)
 						{
-							printf( "%02x", rec->buffer[i]);
+							PRINT( "%02x", rec->buffer[i]);
 						}
-						printf( " to attribute 0x%04x\n", entry->id);
+						PRINT( " to attribute 0x%04x\n", entry->id);
 					#endif
 
 					// Note that we cast away the const of entry->value since it's
@@ -792,7 +788,7 @@ default_assign:
 					_f_memcpy( p, rec->buffer + 1, length);
 					p[length] = '\0';		// add null terminator
 					#ifdef ZIGBEE_ZCL_VERBOSE
-						printf( "%s: assigned '%" PRIsFAR "' to attribute 0x%04x\n",
+						PRINT( "%s: assigned '%" PRIsFAR "' to attribute 0x%04x\n",
 							__FUNCTION__, p, entry->id);
 					#endif
 				}
@@ -850,9 +846,8 @@ int _zcl_write_attributes( zcl_command_t *cmd)
 	zcl_attribute_write_rec_t			parse_record;
 
 	#ifdef ZIGBEE_ZCL_VERBOSE
-		printf( "%s: Write Attributes (cmd=0x%02x)\n", __FUNCTION__,
+		PRINT( "%s: Write Attributes (cmd=0x%02x)\n", __FUNCTION__,
 			cmd->command);
-		hex_dump( cmd->zcl_payload, cmd->length, HEX_DUMP_FLAG_TAB);
 	#endif
 
 	response.header.command = ZCL_CMD_WRITE_ATTRIB_RESP;
@@ -1119,7 +1114,7 @@ int zcl_encode_attribute_value( uint8_t FAR *buffer,
 		if (status != ZCL_STATUS_SUCCESS)
 		{
 			#ifdef ZIGBEE_ZCL_VERBOSE
-				printf( "%s: attribute's read_fn failed (0x%02x)\n",
+				PRINT( "%s: attribute's read_fn failed (0x%02x)\n",
 					__FUNCTION__, status);
 			#endif
 
@@ -1141,7 +1136,7 @@ int zcl_encode_attribute_value( uint8_t FAR *buffer,
 		if (bufsize < sizeof_type)
 		{
 			#ifdef ZIGBEE_ZCL_VERBOSE
-				printf( "%s: out of space (need %d, have %d)\n",
+				PRINT( "%s: out of space (need %d, have %d)\n",
 					__FUNCTION__, sizeof_type, bufsize);
 			#endif
 			return -ZCL_STATUS_INSUFFICIENT_SPACE;
@@ -1176,7 +1171,7 @@ int zcl_encode_attribute_value( uint8_t FAR *buffer,
 			if (*p)
 			{
 				#ifdef ZIGBEE_ZCL_VERBOSE
-					printf( "%s: string too large for buffer\n", __FUNCTION__);
+					PRINT( "%s: string too large for buffer\n", __FUNCTION__);
 				#endif
 				return -ZCL_STATUS_INSUFFICIENT_SPACE;
 			}
@@ -1206,7 +1201,7 @@ int zcl_encode_attribute_value( uint8_t FAR *buffer,
 				// this is a failure on our part -- type used in OUR attribute list
 				// that this function doesn't support
 				#ifdef ZIGBEE_ZCL_VERBOSE
-					printf( "%s: unsupported type 0x%02x\n", __FUNCTION__, type);
+					PRINT( "%s: unsupported type 0x%02x\n", __FUNCTION__, type);
 				#endif
 				return -ZCL_STATUS_FAILURE;
 			}
@@ -1255,7 +1250,7 @@ int _zcl_read_attributes( zcl_command_t *cmd)
 	if (cmd == NULL)
 	{
 		#ifdef ZIGBEE_ZCL_VERBOSE
-			printf( "%s: returning -EINVAL\n", __FUNCTION__);
+			PRINT( "%s: returning -EINVAL\n", __FUNCTION__);
 		#endif
 		return -EINVAL;
 	}
@@ -1266,7 +1261,7 @@ int _zcl_read_attributes( zcl_command_t *cmd)
 	if (payload_length & 0x0001)
 	{
 		#ifdef ZIGBEE_ZCL_VERBOSE
-			printf( "%s: ERROR -- length (%u) is not even\n", __FUNCTION__,
+			PRINT( "%s: ERROR -- length (%u) is not even\n", __FUNCTION__,
 				payload_length);
 		#endif
 		return zcl_default_response( cmd, ZCL_STATUS_MALFORMED_COMMAND);
@@ -1298,7 +1293,7 @@ int _zcl_read_attributes( zcl_command_t *cmd)
 		if (entry == NULL)
 		{
 			#ifdef ZIGBEE_ZCL_VERBOSE
-				printf( "%s: couldn't find attribute 0x%04x\n", __FUNCTION__,
+				PRINT( "%s: couldn't find attribute 0x%04x\n", __FUNCTION__,
 					attribute);
 			#endif
 			*end_response++ = ZCL_STATUS_UNSUPPORTED_ATTRIBUTE;
@@ -1306,7 +1301,7 @@ int _zcl_read_attributes( zcl_command_t *cmd)
 		else if (entry->flags & ZCL_ATTRIB_FLAG_WRITEONLY)
 		{
 			#ifdef ZIGBEE_ZCL_VERBOSE
-				printf( "%s: attribute 0x%04x is write-only\n", __FUNCTION__,
+				PRINT( "%s: attribute 0x%04x is write-only\n", __FUNCTION__,
 					attribute);
 			#endif
 			*end_response++ = ZCL_STATUS_WRITE_ONLY;
@@ -1314,7 +1309,7 @@ int _zcl_read_attributes( zcl_command_t *cmd)
 		else
 		{
 			#ifdef ZIGBEE_ZCL_VERBOSE
-				printf( "%s: found attribute 0x%04x @ index %u\n", __FUNCTION__,
+				PRINT( "%s: found attribute 0x%04x @ index %u\n", __FUNCTION__,
 					attribute, (unsigned) (entry - cmd->attributes));
 			#endif
 
@@ -1373,14 +1368,14 @@ int _zcl_discover_attributes( zcl_command_t *cmd)
 	if (cmd == NULL)
 	{
 		#ifdef ZIGBEE_ZCL_VERBOSE
-			printf( "%s: returning -EINVAL\n", __FUNCTION__);
+			PRINT( "%s: returning -EINVAL\n", __FUNCTION__);
 		#endif
 		return -EINVAL;
 	}
 
 	discover = cmd->zcl_payload;
 	#ifdef ZIGBEE_ZCL_VERBOSE
-		printf( "%s: --- discover attributes, start @ 0x%04x, return %u max\n",
+		PRINT( "%s: --- discover attributes, start @ 0x%04x, return %u max\n",
 			__FUNCTION__, le16toh( discover->start_attrib_id_le),
 			discover->max_return_count);
 	#endif
@@ -1393,7 +1388,7 @@ int _zcl_discover_attributes( zcl_command_t *cmd)
 	if (! attribute)
 	{
 		#ifdef ZIGBEE_ZCL_VERBOSE
-			printf( "%s: cluster has no attributes\n", __FUNCTION__);
+			PRINT( "%s: cluster has no attributes\n", __FUNCTION__);
 		#endif
 		response.complete = ZCL_BOOL_TRUE;			// no attributes to send
 	}
@@ -1478,7 +1473,7 @@ int zcl_command_build( zcl_command_t *cmd,
 	if (cmd == NULL || envelope == NULL)
 	{
 		#ifdef ZIGBEE_ZCL_VERBOSE
-			printf( "%s: returning -EINVAL\n", __FUNCTION__);
+			PRINT( "%s: returning -EINVAL\n", __FUNCTION__);
 		#endif
 		return -EINVAL;
 	}
@@ -1572,33 +1567,33 @@ void zcl_command_dump( const zcl_command_t *cmd)
 	if (cmd == NULL)
 	{
 		#ifdef ZIGBEE_ZCL_VERBOSE
-			puts( "can't dump NULL");
+			PRINT( "can't dump NULL\n");
 		#endif
 		return;
 	}
 
 	frame_control = cmd->frame_control;
-	printf( "%s command, %s, ",
+	PRINT( "%s command, %s, ",
 		zcl_frame_type[frame_control & ZCL_FRAME_TYPE_MASK],
 		(frame_control & ZCL_FRAME_DIRECTION) == ZCL_FRAME_CLIENT_TO_SERVER ?
 		"client-to-server" : "server-to-client");
 	if (frame_control & ZCL_FRAME_DISABLE_DEF_RESP)
 	{
-		printf( "disable default response, ");
+		PRINT( "disable default response, ");
 	}
 
 	if (cmd->mfg_code)
 	{
-		printf( "MFG 0x%04X", cmd->mfg_code);
+		PRINT( "MFG 0x%04X", cmd->mfg_code);
 	}
 
-	printf( "\nsequence = 0x%02X, command = 0x%02X",
+	PRINT( "\nsequence = 0x%02X, command = 0x%02X",
 		cmd->sequence, cmd->command);
 
 	if ((frame_control & ZCL_FRAME_TYPE_MASK) == ZCL_FRAME_TYPE_PROFILE
 		&& cmd->command < _TABLE_ENTRIES( zcl_general_cmd))
 	{
-		printf( " (%s)", zcl_general_cmd[cmd->command]);
+		PRINT( " (%s)", zcl_general_cmd[cmd->command]);
 		b = cmd->zcl_payload;
 		length = cmd->length;
 
@@ -1608,8 +1603,7 @@ void zcl_command_dump( const zcl_command_t *cmd)
 			case ZCL_CMD_DEFAULT_RESP:
 				if (length == 2)
 				{
-					puts( "");
-					printf( "\tCommand 0x%02X: %s\n", b[0], zcl_status_text( b[1]));
+					PRINT( "\n\tCommand 0x%02X: %s\n", b[0], zcl_status_text( b[1]));
 					return;
 				}
 				break;
@@ -1617,33 +1611,32 @@ void zcl_command_dump( const zcl_command_t *cmd)
 			case ZCL_CMD_WRITE_ATTRIB_RESP:
 				if (length == 1 && *b == ZCL_STATUS_SUCCESS)
 				{
-					puts( " SUCCESS");
+					PRINT( "SUCCESS\n");
 				}
 				else
 				{
-					puts( " with errors:");
+					PRINT( " with errors:");
 					while (length >= 3)
 					{
-						printf( "\tattribute 0x%02X%02X: %s\n", b[2], b[1],
+						PRINT( "\tattribute 0x%02X%02X: %s\n", b[2], b[1],
 							zcl_status_text( b[0]));
 						length -= 3;
 						b += 3;
 					}
 					if (length == 2)
 					{
-						printf( "\tunmatched bytes 0x%02X 0x%02X\n", b[0], b[1]);
+						PRINT( "\tunmatched bytes 0x%02X 0x%02X\n", b[0], b[1]);
 					}
 					else if (length == 1)
 					{
-						printf( "\tunmatched byte 0x%02X\n", b[0]);
+						PRINT( "\tunmatched byte 0x%02X\n", b[0]);
 					}
 				}
 				return;
 		}
 	}
 
-	printf( " with %u-byte payload:\n", cmd->length);
-	hex_dump( cmd->zcl_payload, cmd->length, HEX_DUMP_FLAG_TAB);
+	PRINT( " with %u-byte payload:\n", cmd->length);
 }
 
 
@@ -1662,16 +1655,15 @@ void zcl_envelope_payload_dump( const wpan_envelope_t *envelope)
 
 	if (envelope == NULL)
 	{
-		printf( "%s: NULL envelope passed\n", __FUNCTION__);
+		PRINT( "%s: NULL envelope passed\n", __FUNCTION__);
 		return;
 	}
 
 	err = zcl_command_build( &zcl, envelope, NULL);
 	if (err)
 	{
-		printf( "%s: zcl_command_dump() returned %d for %u-byte payload\n",
+		PRINT( "%s: zcl_command_dump() returned %d for %u-byte payload\n",
 			__FUNCTION__, err, envelope->length);
-		hex_dump( envelope->payload, envelope->length, HEX_DUMP_FLAG_OFFSET);
 		return;
 	}
 
@@ -1714,7 +1706,7 @@ int zcl_invalid_cluster( const wpan_envelope_t FAR *envelope,
 	}
 
 	#ifdef ZIGBEE_ZCL_VERBOSE
-		printf( "%s: returning %d\n", __FUNCTION__, error);
+		PRINT( "%s: returning %d\n", __FUNCTION__, error);
 	#endif
 	return error;
 }
@@ -1761,7 +1753,7 @@ int zcl_invalid_command( const wpan_envelope_t FAR *envelope)
 		}
 
 		#ifdef ZIGBEE_ZCL_VERBOSE
-			printf( "%s: status 0x%02x for invalid cluster 0x%04x/cmd 0x%02x\n",
+			PRINT( "%s: status 0x%02x for invalid cluster 0x%04x/cmd 0x%02x\n",
 				__FUNCTION__, status, envelope->cluster_id, zcl.command);
 		#endif
 
@@ -1769,7 +1761,7 @@ int zcl_invalid_command( const wpan_envelope_t FAR *envelope)
 	}
 
 	#ifdef ZIGBEE_ZCL_VERBOSE
-		printf( "%s: returning %d\n", __FUNCTION__, error);
+		PRINT( "%s: returning %d\n", __FUNCTION__, error);
 	#endif
 	return error;
 }
@@ -1808,7 +1800,7 @@ int zcl_general_command( const wpan_envelope_t FAR *envelope,
 	if (error != 0)
 	{
 		#ifdef ZIGBEE_ZCL_VERBOSE
-			printf( "%s: returning %d\n", __FUNCTION__, error);
+			PRINT( "%s: returning %d\n", __FUNCTION__, error);
 		#endif
 		return error;
 	}
@@ -1816,18 +1808,16 @@ int zcl_general_command( const wpan_envelope_t FAR *envelope,
 	if ((zcl.frame_control & ZCL_FRAME_TYPE_MASK) != ZCL_FRAME_TYPE_PROFILE)
 	{
 		#ifdef ZIGBEE_ZCL_VERBOSE
-			printf( "%s: ERROR, non-profile frame type on %u-byte command\n",
+			PRINT( "%s: ERROR, non-profile frame type on %u-byte command\n",
 				__FUNCTION__, envelope->length);
-			hex_dump( envelope->payload, envelope->length, HEX_DUMP_FLAG_TAB);
 		#endif
 
 		return zcl_invalid_command( envelope);
 	}
 
 	#ifdef ZIGBEE_ZCL_VERBOSE
-		printf( "%s: processing %u-byte GENERAL command\n",
+		PRINT( "%s: processing %u-byte GENERAL command\n",
 			__FUNCTION__, envelope->length);
-		hex_dump( envelope->payload, envelope->length, HEX_DUMP_FLAG_TAB);
 	#endif
 
 	/*
@@ -1857,7 +1847,7 @@ int zcl_general_command( const wpan_envelope_t FAR *envelope,
 			#ifdef ZIGBEE_ZCL_VERBOSE
 				{
 					const zcl_default_response_t FAR *resp = zcl.zcl_payload;
-					printf( "%s: got default response (%s) for command 0x%02x\n",
+					PRINT( "%s: got default response (%s) for command 0x%02x\n",
 						__FUNCTION__, zcl_status_text( resp->status), resp->command);
 				}
 			#endif

@@ -18,10 +18,6 @@
 */
 
 /*** BeginHeader */
-#include <errno.h>
-#include <stddef.h>
-#include <stdio.h>
-
 #include "xbee/platform.h"				// may set WPAN_APS_VERBOSE macro
 #include "wpan/types.h"
 #include "wpan/aps.h"
@@ -256,7 +252,7 @@ const wpan_endpoint_table_entry_t *wpan_endpoint_of_cluster( wpan_dev_t *dev,
 			&& wpan_cluster_match( cluster_id, mask, ep->cluster_table))
 		{
 			#ifdef WPAN_APS_VERBOSE
-				printf( "%s: ep 0x%02x matched profile 0x%04x, cluster 0x%04x, "
+				PRINT( "%s: ep 0x%02x matched profile 0x%04x, cluster 0x%04x, "
 					"mask 0x%02x\n", __FUNCTION__,
 					ep->endpoint, profile_id, cluster_id, mask);
 			#endif
@@ -264,7 +260,7 @@ const wpan_endpoint_table_entry_t *wpan_endpoint_of_cluster( wpan_dev_t *dev,
 		}
 	}
 	#ifdef WPAN_APS_VERBOSE
-		printf( "%s: no match for profile 0x%04x, cluster 0x%04x, "
+		PRINT( "%s: no match for profile 0x%04x, cluster 0x%04x, "
 			"mask 0x%02x\n", __FUNCTION__,
 			profile_id, cluster_id, mask);
 	#endif
@@ -455,7 +451,7 @@ int wpan_conversation_response( wpan_ep_state_t FAR *state,
 		if (conversation->transaction_id == transaction_id)
 		{
 			#ifdef WPAN_APS_VERBOSE
-				printf( "%s: matched conversation %u (handler=%p)\n", __FUNCTION__,
+				PRINT( "%s: matched conversation %u (handler=%p)\n", __FUNCTION__,
 					WPAN_MAX_CONVERSATIONS - i, conversation->handler);
 			#endif
 			if (conversation->handler)
@@ -468,7 +464,7 @@ int wpan_conversation_response( wpan_ep_state_t FAR *state,
 				#ifdef WPAN_APS_VERBOSE
 					else if (retval != WPAN_CONVERSATION_CONTINUE)
 					{
-						printf( "%s: invalid reponse %d from conversation handler\n",
+						PRINT( "%s: invalid reponse %d from conversation handler\n",
 							__FUNCTION__, retval);
 					}
 				#endif
@@ -526,7 +522,7 @@ int _wpan_endpoint_dispatch( wpan_envelope_t *envelope,
 	const wpan_cluster_table_entry_t		*clust;
 
 	#ifdef WPAN_APS_VERBOSE
-		printf( "%s: found entry for endpoint 0x%02x\n", __FUNCTION__,
+		PRINT( "%s: found entry for endpoint 0x%02x\n", __FUNCTION__,
 			envelope->dest_endpoint);
 	#endif
 	// Match either an input or an output cluster, since the ZigBee layer
@@ -547,7 +543,7 @@ int _wpan_endpoint_dispatch( wpan_envelope_t *envelope,
 					&& !(envelope->options & WPAN_ENVELOPE_BROADCAST_ADDR)))
 			{
 				#ifdef WPAN_APS_VERBOSE
-					printf( "%s: sending FAILURE for unencrypted APS frame\n",
+					PRINT( "%s: sending FAILURE for unencrypted APS frame\n",
 						__FUNCTION__);
 				#endif
 				// send failure, we don't accept unencrypted broadcast frames
@@ -560,14 +556,14 @@ int _wpan_endpoint_dispatch( wpan_envelope_t *envelope,
 		if (! clust->handler)
 		{
 			#ifdef WPAN_APS_VERBOSE
-				printf( "%s: cluster 0x%04x has null handler\n",
+				PRINT( "%s: cluster 0x%04x has null handler\n",
 					__FUNCTION__, envelope->cluster_id);
 			#endif
 		}
 		else
 		{
 			#ifdef WPAN_APS_VERBOSE
-				printf( "%s: calling handler for cluster 0x%04x\n",
+				PRINT( "%s: calling handler for cluster 0x%04x\n",
 					__FUNCTION__, envelope->cluster_id);
 			#endif
 			// Note that we cast away const when selecting the context to pass
@@ -583,7 +579,7 @@ int _wpan_endpoint_dispatch( wpan_envelope_t *envelope,
 	if (ep->handler)
 	{
 		#ifdef WPAN_APS_VERBOSE
-			printf( "%s: no entry for cluster 0x%04x, use default handler\n",
+			PRINT( "%s: no entry for cluster 0x%04x, use default handler\n",
 				__FUNCTION__, envelope->cluster_id);
 		#endif
 
@@ -591,7 +587,7 @@ int _wpan_endpoint_dispatch( wpan_envelope_t *envelope,
 	}
 
 	#ifdef WPAN_APS_VERBOSE
-		printf( "%s: no handler for 0x%02x/0x%04x, ignoring frame\n",
+		PRINT( "%s: no handler for 0x%02x/0x%04x, ignoring frame\n",
 			__FUNCTION__, envelope->dest_endpoint, envelope->cluster_id);
 	#endif
 	return -ENOENT;
@@ -626,7 +622,7 @@ int wpan_envelope_dispatch( wpan_envelope_t *envelope)
 	int											retval = -ENOENT;
 
 	#ifdef WPAN_APS_VERBOSE
-		printf( "%s: RX ", __FUNCTION__);
+		PRINT( "%s: RX ", __FUNCTION__);
 		wpan_envelope_dump( envelope);
 	#endif
 
@@ -668,7 +664,7 @@ int wpan_envelope_dispatch( wpan_envelope_t *envelope)
 	}
 
 	#ifdef WPAN_APS_VERBOSE
-		printf( "%s: no entry for ep 0x%02x profile 0x%04x, ignoring frame\n",
+		PRINT( "%s: no entry for ep 0x%02x profile 0x%04x, ignoring frame\n",
 			__FUNCTION__, match_ep, envelope->profile_id);
 	#endif
 
@@ -794,14 +790,14 @@ int wpan_envelope_send( const wpan_envelope_t FAR *envelope)
 		|| envelope->dev->endpoint_send == NULL)
 	{
 		#ifdef WPAN_APS_VERBOSE
-			printf( "%s: return -EINVAL; NULL envelope->dev->send\n",
+			PRINT( "%s: return -EINVAL; NULL envelope->dev->send\n",
 				__FUNCTION__);
 		#endif
 		return -EINVAL;
 	}
 
 	#ifdef WPAN_APS_VERBOSE
-		printf( "%s: TX ", __FUNCTION__);
+		PRINT( "%s: TX ", __FUNCTION__);
 		wpan_envelope_dump( envelope);
 	#endif
 	return envelope->dev->endpoint_send( envelope,
@@ -826,17 +822,16 @@ void wpan_envelope_dump( const wpan_envelope_t FAR *envelope)
 
 	if (envelope == NULL)
 	{
-		printf( "NULL envelope\n");
+		PRINT( "NULL envelope\n");
 	}
 	else
 	{
-		printf( "ep %u->%u, profile 0x%04x, clust 0x%04x\n",
+		PRINT( "ep %u->%u, profile 0x%04x, clust 0x%04x\n",
 			envelope->source_endpoint, envelope->dest_endpoint,
 			envelope->profile_id, envelope->cluster_id);
-		printf( "remote %" PRIsFAR " (0x%04x), options=0x%04x, "
+		PRINT( "remote %" PRIsFAR " (0x%04x), options=0x%04x, "
 			"%u-byte payload:\n", addr64_format( addr, &envelope->ieee_address),
 			envelope->network_address, envelope->options, envelope->length);
-		hex_dump( envelope->payload, envelope->length, HEX_DUMP_FLAG_OFFSET);
 	}
 }
 

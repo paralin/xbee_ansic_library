@@ -301,7 +301,6 @@ int zcl_sizeof_type( uint8_t type)
 
 /*** BeginHeader zcl_type_name */
 /*** EndHeader */
-#include <stdio.h>
 /**
 	@brief
 	Return a descriptive string for a given ZCL attribute type.

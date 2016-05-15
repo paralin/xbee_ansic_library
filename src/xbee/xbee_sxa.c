@@ -25,11 +25,10 @@
 
 /*** BeginHeader sxa_table, sxa_table_count, sxa_list_head, sxa_list_count,
 				 sxa_local_table, sxa_xbee, sxa_wpan_address */
-#include <assert.h>
-#include <stdio.h>
-#include <stdlib.h>
-
 #include "xbee/platform.h"
+#ifndef XBEE_NO_ASSERT
+#include <assert.h>
+#endif
 #include "xbee/atcmd.h"
 #include "xbee/byteorder.h"
 #include "xbee/device.h"
@@ -39,10 +38,6 @@
 
 #ifndef __DC__
 	#define _xbee_sxa_debug
-	// Rabbit uses special malloc calls to access system (vs. user) memory
-	#define _sys_calloc( s)		calloc( s, 1)
-	#define _sys_malloc( s)		malloc( s)
-	#define _sys_free( p)		free( p)
 #elif defined XBEE_SXA_DEBUG
 	#define _xbee_sxa_debug	__debug
 #else
@@ -320,7 +315,7 @@ int _sxa_disc_process_node_data( xbee_dev_t *xbee, const void FAR *raw,
 	if (length <= 0)
 	{
 	#ifdef XBEE_DISCOVERY_VERBOSE
-   	printf( "%s: invalid node data of %d bytes:\n",
+   	PRINT( "%s: invalid node data of %d bytes:\n",
 			__FUNCTION__, length);
    #endif
 		return -EINVAL;
@@ -330,7 +325,7 @@ int _sxa_disc_process_node_data( xbee_dev_t *xbee, const void FAR *raw,
 	{
 		sxa = sxa_node_add( xbee, &node_id);
 	#ifdef XBEE_DISCOVERY_VERBOSE
-   	printf( "%s: new/updated SXA node\n",
+   	PRINT( "%s: new/updated SXA node\n",
 			__FUNCTION__);
    #endif
 
@@ -343,7 +338,7 @@ int _sxa_disc_process_node_data( xbee_dev_t *xbee, const void FAR *raw,
 	#ifdef XBEE_DISCOVERY_VERBOSE
    else
    {
-		printf( "%s: invalid node description of %u bytes:\n",
+		PRINT( "%s: invalid node description of %u bytes:\n",
 			__FUNCTION__, length);
 		hex_dump( raw, length, HEX_DUMP_FLAG_OFFSET);
    }
@@ -374,7 +369,7 @@ int _sxa_disc_atnd_response( xbee_dev_t *xbee, const void FAR *raw,
 	{
 		// this is a successful ATND response
 	#ifdef XBEE_DISCOVERY_VERBOSE
-   	printf( "%s\n", __FUNCTION__);
+   	PRINT( "%s\n", __FUNCTION__);
    #endif
 		return _sxa_disc_process_node_data( xbee, resp->value,
 			length - offsetof( xbee_frame_local_at_resp_t, value));
@@ -403,7 +398,7 @@ int _sxa_disc_handle_frame_0x95( xbee_dev_t *xbee, const void FAR *raw,
 	const xbee_frame_node_id_t FAR *frame = raw;
 
 	#ifdef XBEE_DISCOVERY_VERBOSE
-   	printf( "%s\n", __FUNCTION__);
+   	PRINT( "%s\n", __FUNCTION__);
    #endif
 	return _sxa_disc_process_node_data( xbee, &frame->node_data,
 		length - offsetof( xbee_frame_node_id_t, node_data));
@@ -515,7 +510,7 @@ sxa_node_t FAR *sxa_node_add( xbee_dev_t *xbee, const xbee_node_id_t FAR *node_i
 	if (rec == NULL)
    {
 	#ifdef XBEE_DISCOVERY_VERBOSE
-   	printf( "%s: new entry\n", __FUNCTION__);
+   	PRINT( "%s: new entry\n", __FUNCTION__);
    #endif
    	rec = (sxa_node_t FAR *)_sys_calloc(sizeof(*rec));
       rec->node_id_cf = _SXA_CACHED_OK;	// Get this in the discovery data
@@ -545,7 +540,7 @@ sxa_node_t FAR *sxa_node_add( xbee_dev_t *xbee, const xbee_node_id_t FAR *node_i
 	#ifdef XBEE_DISCOVERY_VERBOSE
    else
    {
-   	printf( "%s: updated entry\n", __FUNCTION__);
+   	PRINT( "%s: updated entry\n", __FUNCTION__);
    }
    #endif
 
@@ -567,17 +562,17 @@ void sxa_node_table_dump( void)
 	for (rec = sxa_list_head(); rec; rec = rec->next)
 	{
    	// Will print in reverse order of index
-		printf( "%2u:%c", rec->index, rec->addr_ptr ? ' ' : '*');
-	   printf( "Addr:%08" PRIx32 "-%08" PRIx32 " 0x%04x  "
+		PRINT( "%2u:%c", rec->index, rec->addr_ptr ? ' ' : '*');
+	   PRINT( "Addr:%08" PRIx32 "-%08" PRIx32 " 0x%04x  "
 	      "par:0x%04x %6s\n",
-	      be32toh( rec->id.ieee_addr_be.l[0]), be32toh( rec->id.ieee_addr_be.l[1]),
-	      rec->id.network_addr, rec->id.parent_addr,
+	      (long unsigned int) be32toh( rec->id.ieee_addr_be.l[0]), (long unsigned int) be32toh( rec->id.ieee_addr_be.l[1]),
+	      (unsigned int) rec->id.network_addr, (unsigned int) rec->id.parent_addr,
 	      xbee_disc_device_type_str( rec->id.device_type));
       if (rec->device_info_cf == _SXA_CACHED_OK)
       {
-	   	printf( "\tHV:%04X VR:%08" PRIx32 " DD:%08" PRIx32 "\n",
-         	rec->hardware_version, rec->firmware_version, rec->dd);
-         printf( "\tCAPS:%s%s%s%s%s%s%s%s%s%s\n",
+	   	PRINT( "\tHV:%04X VR:%08" PRIx32 " DD:%08" PRIx32 "\n",
+         	(unsigned int) rec->hardware_version, (long unsigned int) rec->firmware_version, (long unsigned int) rec->dd);
+         PRINT( "\tCAPS:%s%s%s%s%s%s%s%s%s%s\n",
          	rec->caps & ZB_CAP_ADV_ADDR ? " ADV_ADDR" : "",
          	rec->caps & ZB_CAP_ZDO ? " ZDO" : "",
          	rec->caps & ZB_CAP_REMOTE_DDO ? " REMOTE_DDO" : "",
@@ -591,7 +586,7 @@ void sxa_node_table_dump( void)
       }
       if (rec->node_id_cf == _SXA_CACHED_OK)
       {
-	   	printf( "\tNI:[%" PRIsFAR "]\n", rec->id.node_info);
+	   	PRINT( "\tNI:[%" PRIsFAR "]\n", rec->id.node_info);
       }
 	}
 }
@@ -625,7 +620,7 @@ int _sxa_disc_cluster_handler( const wpan_envelope_t FAR *envelope,
 	// xbee_dev_t because the wpan_dev_t is the first element of the xbee_dev_t
 
 	#ifdef XBEE_DISCOVERY_VERBOSE
-   	printf( "%s\n", __FUNCTION__);
+   	PRINT( "%s\n", __FUNCTION__);
    #endif
 	return _sxa_disc_process_node_data( (xbee_dev_t *)envelope->dev,
 		envelope->payload, envelope->length);
@@ -673,7 +668,7 @@ int _sxa_io_process_response( const addr64 FAR *ieee_be,
 	#ifdef XBEE_IO_VERBOSE
    else
    {
-		printf( "%s: invalid I/O sample of %u bytes, or unrecognized node addr:\n",
+		PRINT( "%s: invalid I/O sample of %u bytes, or unrecognized node addr:\n",
 			__FUNCTION__, length);
 		hex_dump( raw, length, HEX_DUMP_FLAG_OFFSET);
    }
@@ -848,9 +843,9 @@ void sxa_io_dump( sxa_node_t FAR *sxa)
 
    for (i = 0; i < 13; ++i)
    {
-   	printf(" %d", io->config[i]);
+   	PRINT(" %d", io->config[i]);
    }
-   printf("\n");
+   PRINT("\n");
 }
 
 /*** BeginHeader sxa_init_or_exit */
@@ -889,7 +884,7 @@ sxa_node_t FAR * sxa_init_or_exit(xbee_dev_t *xbee,
 	xbee_cmd_init_device( xbee);
    if (verbose)
    {
-		printf( "Waiting for driver to query the XBee device...\n");
+		PRINT( "Waiting for driver to query the XBee device...\n");
    }
 	do {
 		wpan_tick( &xbee->wpan_dev);
@@ -898,11 +893,9 @@ sxa_node_t FAR * sxa_init_or_exit(xbee_dev_t *xbee,
 	if (status)
 	{
    	if (verbose)
-      {
-			printf( "Error %d waiting for query to complete.\n", status);
-      	return NULL;
-      }
-      exit(1);
+		  PRINT( "Error %d waiting for query to complete.\n", status);
+      // exit(1); - why...
+      return NULL;
 	}
 
    // Add initial SXA node for the local device.  We key it by its own
@@ -970,7 +963,7 @@ void _sxa_launch_update(sxa_node_t FAR *sxa,
    	list = group->get_list;
       sxa->doing_group = group;
       #ifdef SXA_CACHE_VERBOSE
-      printf("%s: node %u group %u (list=%" PRIpFAR ")\n",
+      PRINT("%s: node %u group %u (list=%" PRIpFAR ")\n",
       	__FUNCTION__, sxa->index, group->id, list);
       #endif
    }
@@ -996,7 +989,7 @@ void _sxa_launch_update(sxa_node_t FAR *sxa,
          sxa->misc_reg[0].type = XBEE_CLT_COPY;
       }
       #ifdef SXA_CACHE_VERBOSE
-      printf("%s: node %u misc reg %s (len=%u)\n",
+      PRINT("%s: node %u misc reg %s (len=%u)\n",
       	__FUNCTION__, sxa->index, xrd->alias, sxa->misc_reg[0].bytes);
       #endif
       list = sxa->misc_reg;
@@ -1062,7 +1055,9 @@ void sxa_tick(void)
       // condition only holds if sxa->queued is not null)
       if (sxa->q_index < sxa->nqueued)
       {
+#ifndef XBEE_NO_ASSERT
 			assert(sxa->queued != NULL);
+#endif
 			xrd = sxa->queued[sxa->q_index];
       }
       else
@@ -1095,7 +1090,7 @@ void sxa_tick(void)
                          _SXA_CACHED_ERROR;
                }
       #ifdef SXA_CACHE_VERBOSE
-      			printf("%s: node %u got result from %s (err=%d)\n",
+      			PRINT("%s: node %u got result from %s (err=%d)\n",
                		__FUNCTION__, sxa->index, xrd->alias, err);
       #endif
          		_sxa_set_cache_status(sxa, xrd, xrd->sxa_cache_group,
@@ -1109,7 +1104,7 @@ void sxa_tick(void)
                if (sxa->doing_group)
                {
       #ifdef SXA_CACHE_VERBOSE
-      				printf("%s: node %u got result from group %d (err=%d)\n",
+      				PRINT("%s: node %u got result from group %d (err=%d)\n",
                   	 __FUNCTION__, sxa->index, sxa->doing_group->id, err);
       #endif
 	               _sxa_set_cache_status(sxa, NULL, sxa->doing_group->id,
@@ -1154,7 +1149,7 @@ void sxa_tick(void)
                if (sxa->queued)
                {
 #ifdef SXA_CACHE_VERBOSE
-						printf("%s: node %u queue completed\n",
+						PRINT("%s: node %u queue completed\n",
                   	__FUNCTION__, sxa->index);
 #endif
 	               _sys_free(sxa->queued);

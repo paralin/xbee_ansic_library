@@ -20,10 +20,6 @@
 */
 
 /*** BeginHeader */
-#include <stddef.h>
-#include <stdio.h>
-#include <string.h>
-
 #include "xbee/platform.h"
 #include "xbee/atcmd.h"
 #include "xbee/byteorder.h"
@@ -92,9 +88,9 @@ void xbee_disc_node_id_dump( const xbee_node_id_t FAR *ni)
 {
 	if (ni != NULL)
 	{
-		printf( "Address:%08" PRIx32 "-%08" PRIx32 " 0x%04x  "
+		PRINT( "Address:%08" PRIx32 "-%08" PRIx32 " 0x%04x  "
 			"PARENT:0x%04x  %6s  NI:[%" PRIsFAR "]\n",
-			be32toh( ni->ieee_addr_be.l[0]), be32toh( ni->ieee_addr_be.l[1]),
+			(long unsigned int) be32toh( ni->ieee_addr_be.l[0]), (long unsigned int)be32toh( ni->ieee_addr_be.l[1]),
 			ni->network_addr, ni->parent_addr,
 			xbee_disc_device_type_str( ni->device_type), ni->node_info);
 
