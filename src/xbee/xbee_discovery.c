@@ -86,6 +86,7 @@ const char *xbee_disc_device_type_str( uint8_t device_type)
 // documented in xbee/discovery.h
 void xbee_disc_node_id_dump( const xbee_node_id_t FAR *ni)
 {
+    /*
 	if (ni != NULL)
 	{
 		PRINT( "Address:%08" PRIx32 "-%08" PRIx32 " 0x%04x  "
@@ -95,6 +96,7 @@ void xbee_disc_node_id_dump( const xbee_node_id_t FAR *ni)
 			xbee_disc_device_type_str( ni->device_type), ni->node_info);
 
 	}
+      */
 }
 
 

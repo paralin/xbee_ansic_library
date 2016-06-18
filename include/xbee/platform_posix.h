@@ -65,4 +65,8 @@ typedef struct xbee_serial_t {
 // We assume the millisecond timer has at least a 10ms resolution.
 #define XBEE_MS_TIMER_RESOLUTION 10
 
+#ifndef FNDELAY
+#define FNDELAY O_NONBLOCK 
+#endif
+
 #endif		// __XBEE_PLATFORM_POSIX

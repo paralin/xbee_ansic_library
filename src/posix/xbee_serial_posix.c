@@ -258,6 +258,7 @@ int xbee_ser_baudrate( xbee_serial_t *serial, uint32_t baudrate)
 		_BAUDCASE(38400);
 		_BAUDCASE(57600);
 		_BAUDCASE(115200);
+		_BAUDCASE(230400);
 		default:
 			return -EINVAL;
 	}

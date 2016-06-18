@@ -216,16 +216,18 @@ void xbee_dev_flowcontrol( xbee_dev_t *xbee, bool_t enabled)
 _xbee_device_debug
 void xbee_dev_dump_settings( xbee_dev_t *xbee, uint16_t flags)
 {
-	char addr[ADDR64_STRING_LENGTH];
+	// char addr[ADDR64_STRING_LENGTH];
 
 	// flags parameter included in API for future expansion; unused for now
 	XBEE_UNUSED_PARAMETER( flags);
 
+  /*
 	PRINT( "XBee on %s: HV=0x%x  VR=0x%" PRIx32 "  IEEE=%" PRIsFAR
 		"  net=0x%04x\n\n", xbee_ser_portname( &xbee->serport),
 		xbee->hardware_version, (long unsigned int) xbee->firmware_version,
 		addr64_format( addr, &xbee->wpan_dev.address.ieee),
 		xbee->wpan_dev.address.network);
+    */
 }
 
 
